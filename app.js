@@ -17,52 +17,31 @@ app.get('/',(req,res)=>{
 
 app.post('/',(req,res)=>{
 
-    var https = require('follow-redirects').https;
-var fs = require('fs');
+    var request = require('request');
+    var options = {
+    'method': 'POST',
+    'url': 'https://westeurope.tts.speech.microsoft.com/cognitiveservices/v1',
+    'headers': {
+        'Host': 'westeurope.tts.speech.microsoft.com',
+        'Content-Type': 'application/ssml+xml',
+        'Ocp-Apim-Subscription-Key': '896c2ca2f64243fb97221fd1c56f9aa3',
+        'X-Microsoft-OutputFormat': 'ogg-16khz-16bit-mono-opus',
+        'Connection': 'Keep-Alive'
+    },
+    body: '<speak version=\'1.0\' xml:lang=\'en-US\'><voice xml:lang=\'en-US\' xml:gender=\'Female\'\r\n    name=\'en-US-AriaNeural\'>\r\n       '+ req.body.textToSpeech + '\r\n</voice></speak>'
 
-var options = {
-  'method': 'POST',
-  'hostname': 'westeurope.tts.speech.microsoft.com',
-  'path': '/cognitiveservices/v1',
-  'headers': {
-    'Host': 'westeurope.tts.speech.microsoft.com',
-    'Content-Type': 'application/ssml+xml',
-    'Ocp-Apim-Subscription-Key': '896c2ca2f64243fb97221fd1c56f9aa3',
-    'X-Microsoft-OutputFormat': 'ogg-16khz-16bit-mono-opus',
-    'Connection': 'Keep-Alive'
-  },
-  'maxRedirects': 20
-};
-
-var req = https.request(options, function (res) {
-  var chunks = [];
-
-  res.on("data", function (chunk) {
-    chunks.push(chunk);
-  });
-
-  res.on("end", function (chunk) {
-    var body = Buffer.concat(chunks);
-    console.log(body.toString());
-  });
-
-  res.on("error", function (error) {
-    console.error(error);
-  });
-});
-
-var postData =  "<speak version='1.0' xml:lang='en-US'><voice xml:lang='en-US' xml:gender='Female'\r\n    name='en-US-AriaNeural'>\r\n        "+ req.textToSpeech + "\r\n</voice></speak>";
-
-req.write(postData);
-
-req.end();
+    };
+    request(options, function (error, response) {
+    if (error) throw new Error(error);
+    console.log(response.body);
+        res.render('audio.ejs',{
+            src: response.body
+        })
+    });
 
     
 
-    res.render('nextpage.ejs',{
-        name: req.body.name,
-        stuff:req.body.age
-    })
+    
 })
 
 app.listen(process.env.PORT||3000,console.log('3000'))

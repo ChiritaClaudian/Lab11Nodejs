@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/7a5d1f3c-b5ee-40a9-b812-b3bc373fcfdc/resourceGroups/lab11/providers/Microsoft.Web/sites/Lab11SpeechToText",
+    "appService.deploySubpath": "."
+}

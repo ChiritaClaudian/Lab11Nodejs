@@ -1,47 +1,52 @@
 const express = require('express');
 const app = express();
-
+const fs = require('fs')
 const path = require('path')
-
+const sdk = require("microsoft-cognitiveservices-speech-sdk");
+app.use(express.static('public'))
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
 
+
 //body parser middleware
+
+function synthesizeSpeech(text) {
+    const speechConfig = sdk.SpeechConfig.fromSubscription("596ad651d1e64507a5531522b0bd4c38", "westeurope");
+    const audioConfig = sdk.AudioConfig.fromAudioFileOutput("public/audio.wav");
+
+    const synthesizer = new sdk.SpeechSynthesizer(speechConfig, audioConfig);
+    synthesizer.speakTextAsync(
+        text,
+        result => {
+            synthesizer.close();
+            if (result) {
+                // return result as stream
+                return fs.createReadStream("public/audio.wav");
+            }
+        },
+        error => {
+            console.log(error);
+            synthesizer.close();
+        });
+}
+
 app.use(express.urlencoded({
     extended: true
 }));
 
 app.get('/',(req,res)=>{
-    res.render('home.ejs')
+    res.render('home.ejs');
+
 })
+function render(){
+    console.log("Wainting to download the audio")
+}
+app.post('/voice',(req,res)=>{
+    console.log(req.body.textToSpeech);
+    synthesizeSpeech(req.body.textToSpeech);
+    setTimeout(render, 2000);
+    res.render('audio.ejs'); 
 
-app.post('/',(req,res)=>{
-
-    var request = require('request');
-    var options = {
-    'method': 'POST',
-    'url': 'https://westeurope.tts.speech.microsoft.com/cognitiveservices/v1',
-    'headers': {
-        'Host': 'westeurope.tts.speech.microsoft.com',
-        'Content-Type': 'application/ssml+xml',
-        'Ocp-Apim-Subscription-Key': '896c2ca2f64243fb97221fd1c56f9aa3',
-        'X-Microsoft-OutputFormat': 'ogg-16khz-16bit-mono-opus',
-        'Connection': 'Keep-Alive'
-    },
-    body: '<speak version=\'1.0\' xml:lang=\'en-US\'><voice xml:lang=\'en-US\' xml:gender=\'Female\'\r\n    name=\'en-US-AriaNeural\'>\r\n       '+ req.body.textToSpeech + '\r\n</voice></speak>'
-
-    };
-    request(options, function (error, response) {
-    if (error) throw new Error(error);
-    console.log(response.body);
-        res.render('audio.ejs',{
-            src: response.body
-        })
-    });
-
-    
-
-    
 })
 
 app.listen(process.env.PORT||3000,console.log('3000'))

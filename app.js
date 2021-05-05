@@ -3,10 +3,10 @@ const app = express();
 const fs = require('fs')
 const path = require('path')
 const sdk = require("microsoft-cognitiveservices-speech-sdk");
-app.use(express.static('public'))
+
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
-
+app.use(express.static('public'))
 
 //body parser middleware
 
@@ -42,9 +42,7 @@ function render(){
     console.log("Wainting to download the audio")
 }
 app.post('/voice',(req,res)=>{
-    console.log(req.body.textToSpeech);
     synthesizeSpeech(req.body.textToSpeech);
-    setTimeout(render, 2000);
     res.render('audio.ejs'); 
 
 })
